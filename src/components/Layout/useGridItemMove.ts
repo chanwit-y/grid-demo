@@ -10,14 +10,10 @@ import { useCallback, useState } from 'react'
 import type { GridItemData } from './types'
 
 type UseGridItemMoveOptions = {
-  applyLayoutChange: (update: () => void, changedItemId?: string | 'all') => void
   setItems: React.Dispatch<React.SetStateAction<GridItemData[]>>
 }
 
-export function useGridItemMove({
-  applyLayoutChange,
-  setItems,
-}: UseGridItemMoveOptions) {
+export function useGridItemMove({ setItems }: UseGridItemMoveOptions) {
   const [activeId, setActiveId] = useState<string | null>(null)
 
   const sensors = useSensors(
@@ -36,16 +32,18 @@ export function useGridItemMove({
       const { active, over } = event
       if (!over || active.id === over.id) return
 
-      applyLayoutChange(() => {
-        setItems((prev) => {
-          const oldIndex = prev.findIndex((i) => i.id === active.id)
-          const newIndex = prev.findIndex((i) => i.id === over.id)
-          if (oldIndex === -1 || newIndex === -1) return prev
-          return arrayMove(prev, oldIndex, newIndex)
-        })
-      }, 'all')
+      // dnd-kit already animates the items to their preview slots during the
+      // drag and lands the dragged item via the DragOverlay drop animation, so
+      // we only commit the new order here. Running the custom FLIP animation on
+      // top of that would re-animate every item and fight with dnd-kit.
+      setItems((prev) => {
+        const oldIndex = prev.findIndex((i) => i.id === active.id)
+        const newIndex = prev.findIndex((i) => i.id === over.id)
+        if (oldIndex === -1 || newIndex === -1) return prev
+        return arrayMove(prev, oldIndex, newIndex)
+      })
     },
-    [applyLayoutChange, setItems],
+    [setItems],
   )
 
   const handleDragCancel = useCallback(() => {

@@ -49,7 +49,7 @@ export function useGridLayout() {
   )
 
   const { sensors, activeId, handleDragStart, handleDragEnd, handleDragCancel } =
-    useGridItemMove({ applyLayoutChange, setItems })
+    useGridItemMove({ setItems })
 
   const addItem = useCallback(() => {
     const bpCols = containerSettings.columns
