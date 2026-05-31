@@ -2,10 +2,7 @@ import { BREAKPOINTS, clampColumns, clampSpan } from './breakpoints'
 import type { Breakpoint } from './breakpoints'
 import { GRID_ITEM_TRANSITION, GRID_LAYOUT_TRANSITION } from './gridAnimation'
 import type { GridContainerSettings, GridItemData } from './types'
-
-function escapeClassName(id: string): string {
-  return id.replace(/[^a-zA-Z0-9_-]/g, '_')
-}
+import { escapeClassName } from './utils'
 
 function mediaQuery(minWidth: number): string {
   return minWidth > 0 ? `@media (min-width: ${minWidth}px)` : ''
@@ -102,6 +99,32 @@ function rulesChanged(a: string, b: string): boolean {
   return a.trim() !== b.trim()
 }
 
+function containerBlock(containerClass: string, rules: string): string {
+  return `.${containerClass} {
+  display: grid;
+  transition: ${GRID_LAYOUT_TRANSITION};
+  ${rules}
+}`
+}
+
+function itemBlock(itemClass: string, rules: string): string {
+  return `.${itemClass} {\n  transition: ${GRID_ITEM_TRANSITION};\n  ${rules}\n}`
+}
+
+function reducedMotionBlock(containerClass: string): string {
+  return `.${containerClass} .grid-item-cell {
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .${containerClass},
+  .${containerClass} .grid-item-cell {
+    transition: none !important;
+    animation: none !important;
+    will-change: auto;
+  }
+}`
+}
+
 export function generateGridStyles(
   layoutId: string,
   container: GridContainerSettings,
@@ -110,62 +133,34 @@ export function generateGridStyles(
 ): string {
   const containerClass = `gl-${escapeClassName(layoutId)}`
 
+  // Preview mode: emit only the rules for the single chosen breakpoint so the
+  // canvas reflects exactly how the grid looks at that size.
   if (previewBreakpoint) {
-    const blocks: string[] = [
-      `.${containerClass} {
-  display: grid;
-  transition: ${GRID_LAYOUT_TRANSITION};
-  ${containerRules(container, previewBreakpoint)}
-}`,
-      `.${containerClass} .grid-item-cell {
-  will-change: transform;
-}
-@media (prefers-reduced-motion: reduce) {
-  .${containerClass},
-  .${containerClass} .grid-item-cell {
-    transition: none !important;
-    animation: none !important;
-    will-change: auto;
-  }
-}`,
+    const blocks = [
+      containerBlock(containerClass, containerRules(container, previewBreakpoint)),
+      reducedMotionBlock(containerClass),
+      ...items.map((item) =>
+        itemBlock(
+          `gi-${escapeClassName(item.id)}`,
+          itemRules(item, container, previewBreakpoint),
+        ),
+      ),
     ]
-
-    for (const item of items) {
-      const itemClass = `gi-${escapeClassName(item.id)}`
-      blocks.push(
-        `.${itemClass} {\n  transition: ${GRID_ITEM_TRANSITION};\n  ${itemRules(item, container, previewBreakpoint)}\n}`,
-      )
-    }
-
     return blocks.join('\n\n')
   }
 
+  // Full responsive output: base (xs) rules plus min-width media queries that
+  // only repeat the rules that actually change at each breakpoint.
   const blocks: string[] = [
-    `.${containerClass} {
-  display: grid;
-  transition: ${GRID_LAYOUT_TRANSITION};
-  ${containerRules(container, 'xs')}
-}`,
-    `.${containerClass} .grid-item-cell {
-  will-change: transform;
-}
-@media (prefers-reduced-motion: reduce) {
-  .${containerClass},
-  .${containerClass} .grid-item-cell {
-    transition: none !important;
-    animation: none !important;
-    will-change: auto;
-  }
-}`,
+    containerBlock(containerClass, containerRules(container, 'xs')),
+    reducedMotionBlock(containerClass),
   ]
 
   let prevContainer = containerRules(container, 'xs')
   for (const bp of BREAKPOINTS.slice(1)) {
     const rules = containerRules(container, bp.key)
     if (rulesChanged(prevContainer, rules)) {
-      blocks.push(
-        wrapMedia(bp.minWidth, `.${containerClass}`, rules),
-      )
+      blocks.push(wrapMedia(bp.minWidth, `.${containerClass}`, rules))
       prevContainer = rules
     }
   }
@@ -173,9 +168,7 @@ export function generateGridStyles(
   for (const item of items) {
     const itemClass = `gi-${escapeClassName(item.id)}`
     const baseRules = itemRules(item, container, 'xs')
-    blocks.push(
-      `.${itemClass} {\n  transition: ${GRID_ITEM_TRANSITION};\n  ${baseRules}\n}`,
-    )
+    blocks.push(itemBlock(itemClass, baseRules))
 
     let prevItem = baseRules
     for (const bp of BREAKPOINTS.slice(1)) {

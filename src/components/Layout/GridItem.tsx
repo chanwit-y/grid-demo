@@ -7,7 +7,6 @@ import type { GridItemData } from './types'
 type GridItemProps = {
   item: GridItemData
   itemClassName: string
-  index: number
   isSelected: boolean
   onSelect: (id: string, rect: DOMRect) => void
 }
