@@ -22,8 +22,6 @@ export type GridItemSettings = {
   colSpan: Responsive<number>
   colStart: Responsive<number>
   rowSpan: Responsive<number>
-  gridColumn: Responsive<string>
-  gridRow: Responsive<string>
   gridArea: Responsive<string>
   justifySelf: Responsive<string>
   alignSelf: Responsive<string>
@@ -66,8 +64,6 @@ export const defaultItemSettings: GridItemSettings = {
   colSpan: responsiveNumbers({ xs: 4, sm: 3, md: 2, lg: 2 }),
   colStart: responsiveNumbers({ xs: 0, sm: 0, md: 0, lg: 0 }),
   rowSpan: responsiveNumbers({ xs: 1, sm: 1, md: 1, lg: 1 }),
-  gridColumn: responsive(''),
-  gridRow: responsive(''),
   gridArea: responsive(''),
   justifySelf: responsive('stretch'),
   alignSelf: responsive('stretch'),
@@ -83,8 +79,6 @@ export function createDefaultItemSettings(
     colSpan: { ...defaultItemSettings.colSpan, ...overrides?.colSpan },
     colStart: { ...defaultItemSettings.colStart, ...overrides?.colStart },
     rowSpan: { ...defaultItemSettings.rowSpan, ...overrides?.rowSpan },
-    gridColumn: { ...defaultItemSettings.gridColumn, ...overrides?.gridColumn },
-    gridRow: { ...defaultItemSettings.gridRow, ...overrides?.gridRow },
     gridArea: { ...defaultItemSettings.gridArea, ...overrides?.gridArea },
     justifySelf: { ...defaultItemSettings.justifySelf, ...overrides?.justifySelf },
     alignSelf: { ...defaultItemSettings.alignSelf, ...overrides?.alignSelf },

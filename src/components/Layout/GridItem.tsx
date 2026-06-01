@@ -43,7 +43,9 @@ export function GridItem({
       }}
       className={[
         itemClassName,
-        'grid-item-cell group relative flex h-14 touch-none items-center justify-center rounded-lg border-2 p-2',
+        // Let the CSS grid (and `grid-row: span N`) control height. Keep a
+        // sensible single-row minimum to match the default `grid-auto-rows`.
+        'grid-item-cell group relative flex min-h-14 touch-none items-center justify-center rounded-lg border-2 p-2',
         'transition-[border-color,background-color,box-shadow,opacity] duration-200 ease-out',
         isDragging
           ? 'z-0 border-dashed border-violet-300 bg-violet-50/40 opacity-40'

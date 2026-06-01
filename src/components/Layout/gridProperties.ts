@@ -127,17 +127,6 @@ export const itemResponsiveFields: PropertyField[] = [
     max: 6,
   },
   {
-    key: 'gridColumn',
-    label: 'grid-column (override)',
-    placeholder: '1 / 3 or span 2',
-    hint: 'Overrides column span when set',
-  },
-  {
-    key: 'gridRow',
-    label: 'grid-row',
-    placeholder: '1 / 2 or span 2',
-  },
-  {
     key: 'gridArea',
     label: 'grid-area',
     placeholder: 'header',

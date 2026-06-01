@@ -59,25 +59,19 @@ function itemRules(
 ): string {
   const settings = item.settings
   const columns = clampColumns(container.columns[bp])
-  const rawColumn = settings.gridColumn[bp].trim()
   const colStart = settings.colStart[bp]
   const colSpan = clampSpan(settings.colSpan[bp], columns)
 
   const lines: string[] = []
 
-  if (rawColumn) {
-    lines.push(`grid-column: ${rawColumn};`)
-  } else if (colStart > 0) {
+  if (colStart > 0) {
     lines.push(`grid-column: ${colStart} / span ${colSpan};`)
   } else {
     lines.push(`grid-column: span ${colSpan};`)
   }
 
-  const rawRow = settings.gridRow[bp].trim()
   const rowSpan = settings.rowSpan[bp]
-  if (rawRow) {
-    lines.push(`grid-row: ${rawRow};`)
-  } else if (rowSpan > 1) {
+  if (rowSpan > 1) {
     lines.push(`grid-row: span ${rowSpan};`)
   }
 
