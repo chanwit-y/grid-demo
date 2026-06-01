@@ -37,7 +37,8 @@ export function useGridLayout() {
   const [containerSettings, setContainerSettings] =
     useState<GridContainerSettings>(defaultContainerSettings)
 
-  const { gridRef, captureSnapshot, scheduleAnimation } = useGridFlipAnimation()
+  const { gridRef, frameRef, captureSnapshot, scheduleAnimation } =
+    useGridFlipAnimation()
 
   const applyLayoutChange = useCallback(
     (update: () => void, changedItemId?: string | 'all') => {
@@ -124,6 +125,7 @@ export function useGridLayout() {
     items,
     containerSettings,
     gridRef,
+    frameRef,
     sensors,
     activeId,
     handleDragStart,

@@ -3,7 +3,7 @@ import { rectSortingStrategy, SortableContext } from '@dnd-kit/sortable'
 import { LayoutGrid } from 'lucide-react'
 import { useCallback, useId, useMemo, useState } from 'react'
 import { BREAKPOINTS, type Breakpoint } from './breakpoints'
-import { SMOOTH_DURATION_MS, SMOOTH_EASING } from './gridAnimation'
+import { SMOOTH_EASING } from './gridAnimation'
 import { GridItem, GridItemOverlay } from './GridItem'
 import { generateGridStyles } from './gridStyles'
 import { Popover } from './Popover'
@@ -21,6 +21,7 @@ export function Layout() {
     items,
     containerSettings,
     gridRef,
+    frameRef,
     sensors,
     activeId,
     handleDragStart,
@@ -109,11 +110,9 @@ export function Layout() {
               }}
             >
               <div
-                className="mx-auto w-full max-w-full"
-                style={{
-                  width: previewWidth ?? '100%',
-                  transition: `width ${SMOOTH_DURATION_MS}ms ${SMOOTH_EASING}`,
-                }}
+                ref={frameRef}
+                className="mx-auto w-full max-w-full rounded-lg"
+                style={{ width: previewWidth ?? '100%' }}
               >
                 <DndContext
                   sensors={sensors}
