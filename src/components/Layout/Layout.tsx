@@ -2,13 +2,12 @@ import { closestCenter, DndContext, DragOverlay } from '@dnd-kit/core'
 import { rectSortingStrategy, SortableContext } from '@dnd-kit/sortable'
 import { LayoutGrid } from 'lucide-react'
 import { useCallback, useId, useMemo, useState } from 'react'
+import { CodeViewer, Popover } from '../common'
 import { BREAKPOINTS, type Breakpoint } from './breakpoints'
-import { CodeViewer } from './CodeViewer'
 import { SMOOTH_EASING } from './gridAnimation'
 import { gridConfigToJson } from './gridConfig'
 import { GridItem, GridItemOverlay } from './GridItem'
 import { generateGridStyles } from './gridStyles'
-import { Popover } from './Popover'
 import { PreviewToolbar } from './PreviewToolbar'
 import { ContainerSettingsPanel, ItemSettingsPanel } from './SettingsPanel'
 import { useGridLayout } from './useGridLayout'
@@ -102,11 +101,6 @@ export function Layout() {
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-zinc-50">
       <style dangerouslySetInnerHTML={{ __html: gridCss }} />
-
-      <header className="flex shrink-0 items-center gap-3 border-b border-zinc-200 bg-white px-4 py-3">
-        <h1 className="text-base font-semibold text-zinc-900">12-Column Grid</h1>
-        <p className="text-xs text-zinc-500">Responsive: xs · sm · md · lg (max 12 cols)</p>
-      </header>
 
       <div className="flex min-h-0 flex-1 flex-col p-4">
         <div className="mx-auto flex min-h-0 w-full flex-1 flex-col">

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { cn } from './cn'
 
 type PopoverProps = {
   anchor: DOMRect | null
@@ -59,13 +60,13 @@ export function Popover({ anchor, title, onClose, children }: PopoverProps) {
       ref={panelRef}
       role="dialog"
       aria-label={title}
-      className={[
+      className={cn(
         'fixed z-50 flex w-80 flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-xl',
         'transition duration-200 ease-out motion-reduce:transition-none',
         entered
           ? 'translate-y-0 scale-100 opacity-100'
           : '-translate-y-2 scale-110 opacity-0',
-      ].join(' ')}
+      )}
       style={{ top, left, maxHeight, transformOrigin: 'top left' }}
     >
       <header className="flex shrink-0 items-center justify-between border-b border-zinc-100 px-3 py-2.5">

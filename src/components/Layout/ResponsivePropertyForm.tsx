@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { cn } from '../common'
 import { BREAKPOINTS, MAX_GRID_COLUMNS, type Breakpoint } from './breakpoints'
 import { BREAKPOINT_LABELS, type PropertyField } from './gridProperties'
 import type { Responsive } from './types'
@@ -26,12 +27,12 @@ function ColumnSpanButtons({
             type="button"
             aria-pressed={isActive}
             onClick={() => onSelect(String(n))}
-            className={[
+            className={cn(
               'min-w-[2.25rem] rounded-md border px-2 py-1.5 font-mono text-xs font-semibold transition-colors',
               isActive
                 ? 'border-violet-600 bg-violet-600 text-white shadow-sm'
                 : 'border-zinc-300 bg-white text-zinc-700 hover:border-violet-400 hover:bg-violet-50',
-            ].join(' ')}
+            )}
           >
             {n}
           </button>
@@ -97,12 +98,12 @@ export function ResponsivePropertyForm({
             key={bp.key}
             type="button"
             onClick={() => setActiveBp(bp.key)}
-            className={[
+            className={cn(
               'rounded-md px-2.5 py-1 text-xs font-semibold transition-colors',
               activeBp === bp.key
                 ? 'bg-violet-600 text-white shadow-sm'
                 : 'text-zinc-600 hover:bg-white hover:text-zinc-900',
-            ].join(' ')}
+            )}
           >
             {bp.label}
           </button>

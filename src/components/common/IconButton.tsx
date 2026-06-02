@@ -1,4 +1,5 @@
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
+import { cn } from './cn'
 
 type IconButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   label: string
@@ -26,11 +27,11 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
         type="button"
         aria-label={label}
         title={label}
-        className={[
+        className={cn(
           'inline-flex h-9 w-9 items-center justify-center rounded-md border transition-colors',
           variants[variant],
-          className ?? '',
-        ].join(' ')}
+          className,
+        )}
         {...rest}
       >
         {children}

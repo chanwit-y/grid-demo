@@ -1,7 +1,7 @@
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { GripVertical, Settings } from 'lucide-react'
-import { IconButton } from './IconButton'
+import { cn, IconButton } from '../common'
 import type { GridItemData } from './types'
 
 type GridItemProps = {
@@ -41,7 +41,7 @@ export function GridItem({
       onClick={(e) => {
         e.stopPropagation()
       }}
-      className={[
+      className={cn(
         itemClassName,
         // Let the CSS grid (and `grid-row: span N`) control height. Keep a
         // sensible single-row minimum to match the default `grid-auto-rows`.
@@ -54,7 +54,7 @@ export function GridItem({
             : isSelected
               ? 'border-dashed border-violet-500 bg-violet-50 ring-2 ring-violet-500/30'
               : 'border-dashed border-zinc-300 bg-white hover:border-violet-400 hover:bg-violet-50/50 hover:shadow-sm',
-      ].join(' ')}
+      )}
     >
       <IconButton
         ref={setActivatorNodeRef}

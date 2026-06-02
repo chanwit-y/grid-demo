@@ -1,6 +1,6 @@
 import { Code, Plus, Settings } from 'lucide-react'
+import { cn, IconButton } from '../common'
 import { BREAKPOINTS, type Breakpoint } from './breakpoints'
-import { IconButton } from './IconButton'
 
 type PreviewToolbarProps = {
   previewBreakpoint: Breakpoint
@@ -30,12 +30,12 @@ export function PreviewToolbar({
             key={bp.key}
             type="button"
             onClick={() => onSelectBreakpoint(bp.key)}
-            className={[
+            className={cn(
               'rounded px-2 py-1 text-xs font-medium transition-colors',
               previewBreakpoint === bp.key
                 ? 'bg-violet-600 text-white'
                 : 'text-zinc-600 hover:bg-white',
-            ].join(' ')}
+            )}
           >
             {bp.label}
           </button>

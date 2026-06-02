@@ -1,5 +1,6 @@
 import { Check, Copy } from 'lucide-react'
 import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { cn } from './cn'
 
 export type CodeTab = {
   id: string
@@ -59,12 +60,12 @@ export function CodeViewer({
               key={tab.id}
               type="button"
               onClick={() => setActiveId(tab.id)}
-              className={[
+              className={cn(
                 'rounded px-2 py-1 text-xs font-medium transition-colors',
                 tab.id === activeTab.id
                   ? 'bg-zinc-800 text-zinc-100'
                   : 'text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-200',
-              ].join(' ')}
+              )}
             >
               {tab.label}
             </button>
@@ -89,7 +90,7 @@ export function CodeViewer({
         </button>
       </div>
 
-      <div className={`${maxHeightClassName} overflow-auto`}>
+      <div className={cn(maxHeightClassName, 'overflow-auto')}>
         <pre className="min-w-full text-[11px] leading-relaxed">
           <code className="grid grid-cols-[auto_1fr]">
             {lines.map((line, i) => (
