@@ -3,7 +3,9 @@ import { rectSortingStrategy, SortableContext } from '@dnd-kit/sortable'
 import { LayoutGrid } from 'lucide-react'
 import { useCallback, useId, useMemo, useState } from 'react'
 import { BREAKPOINTS, type Breakpoint } from './breakpoints'
+import { CodeViewer } from './CodeViewer'
 import { SMOOTH_EASING } from './gridAnimation'
+import { gridConfigToJson } from './gridConfig'
 import { GridItem, GridItemOverlay } from './GridItem'
 import { generateGridStyles } from './gridStyles'
 import { Popover } from './Popover'
@@ -12,7 +14,7 @@ import { ContainerSettingsPanel, ItemSettingsPanel } from './SettingsPanel'
 import { useGridLayout } from './useGridLayout'
 import { escapeClassName } from './utils'
 
-type SettingsTarget = 'item' | 'container' | null
+type SettingsTarget = 'item' | 'container' | 'code' | null
 
 export function Layout() {
   const layoutId = escapeClassName(useId())
@@ -48,6 +50,16 @@ export function Layout() {
     [layoutId, containerSettings, items, previewBreakpoint],
   )
 
+  const gridConfigJson = useMemo(
+    () => gridConfigToJson(containerSettings, items),
+    [containerSettings, items],
+  )
+
+  const fullGridCss = useMemo(
+    () => generateGridStyles(layoutId, containerSettings, items),
+    [layoutId, containerSettings, items],
+  )
+
   const previewWidth = BREAKPOINTS.find((b) => b.key === previewBreakpoint)?.previewWidth
 
   const closePopover = useCallback(() => {
@@ -64,6 +76,12 @@ export function Layout() {
   const openItemSettings = useCallback((id: string, rect: DOMRect) => {
     setSelectedItemId(id)
     setSettingsTarget('item')
+    setPopoverAnchor(rect)
+  }, [])
+
+  const openCodePanel = useCallback((rect: DOMRect) => {
+    setSelectedItemId(null)
+    setSettingsTarget('code')
     setPopoverAnchor(rect)
   }, [])
 
@@ -96,9 +114,11 @@ export function Layout() {
             <PreviewToolbar
               previewBreakpoint={previewBreakpoint}
               containerActive={settingsTarget === 'container'}
+              codeActive={settingsTarget === 'code'}
               onSelectBreakpoint={handleSelectBreakpoint}
               onOpenContainerSettings={openContainerSettings}
               onAddItem={addItem}
+              onOpenCode={openCodePanel}
             />
 
             <div
@@ -163,7 +183,9 @@ export function Layout() {
         title={
           settingsTarget === 'container'
             ? 'Grid container (12-col max)'
-            : `Grid item: ${selectedItem?.label ?? 'Settings'}`
+            : settingsTarget === 'code'
+              ? 'Component config'
+              : `Grid item: ${selectedItem?.label ?? 'Settings'}`
         }
         onClose={closePopover}
       >
@@ -177,6 +199,15 @@ export function Layout() {
             onChangeLabel={(label) => updateItemLabel(selectedItem.id, label)}
             onChangeSetting={(bp, key, value) => updateItem(selectedItem.id, bp, key, value)}
             onRemove={handleRemoveItem}
+          />
+        )}
+        {settingsTarget === 'code' && (
+          <CodeViewer
+            maxHeightClassName="max-h-96"
+            tabs={[
+              { id: 'json', label: 'JSON config', language: 'json', code: gridConfigJson },
+              { id: 'css', label: 'CSS', language: 'css', code: fullGridCss },
+            ]}
           />
         )}
       </Popover>

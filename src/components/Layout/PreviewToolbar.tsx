@@ -1,21 +1,25 @@
-import { Plus, Settings } from 'lucide-react'
+import { Code, Plus, Settings } from 'lucide-react'
 import { BREAKPOINTS, type Breakpoint } from './breakpoints'
 import { IconButton } from './IconButton'
 
 type PreviewToolbarProps = {
   previewBreakpoint: Breakpoint
   containerActive: boolean
+  codeActive: boolean
   onSelectBreakpoint: (bp: Breakpoint) => void
   onOpenContainerSettings: (rect: DOMRect) => void
   onAddItem: () => void
+  onOpenCode: (rect: DOMRect) => void
 }
 
 export function PreviewToolbar({
   previewBreakpoint,
   containerActive,
+  codeActive,
   onSelectBreakpoint,
   onOpenContainerSettings,
   onAddItem,
+  onOpenCode,
 }: PreviewToolbarProps) {
   return (
     <div className="relative flex shrink-0 items-center justify-end gap-2 border-b border-zinc-200 bg-white/70 px-3 py-2">
@@ -38,10 +42,11 @@ export function PreviewToolbar({
         ))}
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-0.5 rounded-lg border border-zinc-200 bg-zinc-50 p-1">
         <IconButton
           label="Grid container settings"
           active={containerActive}
+          className="h-8! w-8! border-0 bg-transparent shadow-none"
           onClick={(e) => {
             e.stopPropagation()
             onOpenContainerSettings(e.currentTarget.getBoundingClientRect())
@@ -50,8 +55,20 @@ export function PreviewToolbar({
           <Settings size={18} aria-hidden="true" />
         </IconButton>
         <IconButton
+          label="View component config (JSON / CSS)"
+          active={codeActive}
+          className="h-8! w-8! border-0 bg-transparent shadow-none"
+          onClick={(e) => {
+            e.stopPropagation()
+            onOpenCode(e.currentTarget.getBoundingClientRect())
+          }}
+        >
+          <Code size={18} aria-hidden="true" />
+        </IconButton>
+        <IconButton
           label="Add grid item"
           variant="primary"
+          className="h-8! w-8! shadow-none"
           onClick={(e) => {
             e.stopPropagation()
             onAddItem()
