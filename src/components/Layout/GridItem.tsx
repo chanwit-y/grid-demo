@@ -2,21 +2,19 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { GripVertical, Settings } from 'lucide-react'
 import { cn, IconButton } from '../common'
+import { useGridStore } from './gridStore'
 import type { GridItemData } from './types'
+import { escapeClassName } from './utils'
 
 type GridItemProps = {
   item: GridItemData
-  itemClassName: string
   isSelected: boolean
-  onSelect: (id: string, rect: DOMRect) => void
 }
 
-export function GridItem({
-  item,
-  itemClassName,
-  isSelected,
-  onSelect,
-}: GridItemProps) {
+export function GridItem({ item, isSelected }: GridItemProps) {
+  const openItemSettings = useGridStore((s) => s.openItemSettings)
+  const itemClassName = `gi-${escapeClassName(item.id)}`
+
   const {
     attributes,
     listeners,
@@ -71,7 +69,7 @@ export function GridItem({
         className="absolute right-1 top-1 z-10 h-6! w-6! rounded-md opacity-60 shadow-sm transition-opacity group-hover:opacity-100"
         onClick={(e) => {
           e.stopPropagation()
-          onSelect(item.id, e.currentTarget.getBoundingClientRect())
+          openItemSettings(item.id, e.currentTarget.getBoundingClientRect())
         }}
       >
         <Settings className="h-3.5 w-3.5" aria-hidden="true" />

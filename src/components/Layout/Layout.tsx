@@ -1,48 +1,74 @@
-import { closestCenter, DndContext, DragOverlay } from '@dnd-kit/core'
+import {
+  closestCenter,
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragStartEvent,
+} from '@dnd-kit/core'
 import { rectSortingStrategy, SortableContext } from '@dnd-kit/sortable'
 import { LayoutGrid } from 'lucide-react'
-import { useCallback, useId, useMemo, useState } from 'react'
+import { useCallback, useEffect, useId, useMemo } from 'react'
 import { CodeViewer, Popover } from '../common'
-import { BREAKPOINTS, type Breakpoint } from './breakpoints'
+import { BREAKPOINTS } from './breakpoints'
 import { SMOOTH_EASING } from './gridAnimation'
 import { gridConfigToJson } from './gridConfig'
 import { GridItem, GridItemOverlay } from './GridItem'
+import { useActiveItem, useGridStore, useSelectedItem } from './gridStore'
 import { generateGridStyles } from './gridStyles'
 import { PreviewToolbar } from './PreviewToolbar'
 import { ContainerSettingsPanel, ItemSettingsPanel } from './SettingsPanel'
-import { useGridLayout } from './useGridLayout'
+import { useGridFlipAnimation } from './useGridFlipAnimation'
 import { escapeClassName } from './utils'
-
-type SettingsTarget = 'item' | 'container' | 'code' | null
 
 export function Layout() {
   const layoutId = escapeClassName(useId())
 
-  const {
-    items,
-    containerSettings,
-    gridRef,
-    frameRef,
-    sensors,
-    activeId,
-    handleDragStart,
-    handleDragEnd,
-    handleDragCancel,
-    addItem,
-    removeItem,
-    updateContainer,
-    updateItem,
-    updateItemLabel,
-    animateLayout,
-  } = useGridLayout()
+  const items = useGridStore((s) => s.items)
+  const containerSettings = useGridStore((s) => s.containerSettings)
+  const previewBreakpoint = useGridStore((s) => s.previewBreakpoint)
+  const popoverAnchor = useGridStore((s) => s.popoverAnchor)
+  const settingsTarget = useGridStore((s) => s.settingsTarget)
+  const selectedItemId = useGridStore((s) => s.selectedItemId)
 
-  const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
-  const [popoverAnchor, setPopoverAnchor] = useState<DOMRect | null>(null)
-  const [settingsTarget, setSettingsTarget] = useState<SettingsTarget>(null)
-  const [previewBreakpoint, setPreviewBreakpoint] = useState<Breakpoint>('lg')
+  const setActiveId = useGridStore((s) => s.setActiveId)
+  const moveItem = useGridStore((s) => s.moveItem)
+  const closePopover = useGridStore((s) => s.closePopover)
+  const setAnimator = useGridStore((s) => s.setAnimator)
 
-  const selectedItem = items.find((i) => i.id === selectedItemId) ?? null
-  const activeItem = activeId ? items.find((i) => i.id === activeId) ?? null : null
+  const selectedItem = useSelectedItem()
+  const activeItem = useActiveItem()
+
+  // FLIP animation lives in React (DOM refs + effects); register its callbacks
+  // with the store so data actions can animate layout changes.
+  const { gridRef, frameRef, captureSnapshot, scheduleAnimation } = useGridFlipAnimation()
+  useEffect(() => {
+    setAnimator({ capture: captureSnapshot, schedule: scheduleAnimation })
+    return () => setAnimator(null)
+  }, [setAnimator, captureSnapshot, scheduleAnimation])
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+  )
+
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => setActiveId(String(event.active.id)),
+    [setActiveId],
+  )
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      setActiveId(null)
+      const { active, over } = event
+      if (!over || active.id === over.id) return
+      moveItem(String(active.id), String(over.id))
+    },
+    [setActiveId, moveItem],
+  )
+
+  const handleDragCancel = useCallback(() => setActiveId(null), [setActiveId])
 
   const gridCss = useMemo(
     () => generateGridStyles(layoutId, containerSettings, items, previewBreakpoint),
@@ -61,43 +87,6 @@ export function Layout() {
 
   const previewWidth = BREAKPOINTS.find((b) => b.key === previewBreakpoint)?.previewWidth
 
-  const closePopover = useCallback(() => {
-    setPopoverAnchor(null)
-    setSettingsTarget(null)
-  }, [])
-
-  const openContainerSettings = useCallback((rect: DOMRect) => {
-    setSelectedItemId(null)
-    setSettingsTarget('container')
-    setPopoverAnchor(rect)
-  }, [])
-
-  const openItemSettings = useCallback((id: string, rect: DOMRect) => {
-    setSelectedItemId(id)
-    setSettingsTarget('item')
-    setPopoverAnchor(rect)
-  }, [])
-
-  const openCodePanel = useCallback((rect: DOMRect) => {
-    setSelectedItemId(null)
-    setSettingsTarget('code')
-    setPopoverAnchor(rect)
-  }, [])
-
-  const handleRemoveItem = useCallback(() => {
-    if (!selectedItemId) return
-    removeItem(selectedItemId)
-    setSelectedItemId(null)
-    closePopover()
-  }, [selectedItemId, removeItem, closePopover])
-
-  const handleSelectBreakpoint = useCallback(
-    (bp: Breakpoint) => {
-      animateLayout(() => setPreviewBreakpoint(bp))
-    },
-    [animateLayout],
-  )
-
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-zinc-50">
       <style dangerouslySetInnerHTML={{ __html: gridCss }} />
@@ -105,15 +94,7 @@ export function Layout() {
       <div className="flex min-h-0 flex-1 flex-col p-4">
         <div className="mx-auto flex min-h-0 w-full flex-1 flex-col">
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100/80">
-            <PreviewToolbar
-              previewBreakpoint={previewBreakpoint}
-              containerActive={settingsTarget === 'container'}
-              codeActive={settingsTarget === 'code'}
-              onSelectBreakpoint={handleSelectBreakpoint}
-              onOpenContainerSettings={openContainerSettings}
-              onAddItem={addItem}
-              onOpenCode={openCodePanel}
-            />
+            <PreviewToolbar />
 
             <div
               className="flex min-h-0 flex-1 flex-col items-center p-4"
@@ -154,9 +135,7 @@ export function Layout() {
                           <GridItem
                             key={item.id}
                             item={item}
-                            itemClassName={`gi-${escapeClassName(item.id)}`}
                             isSelected={selectedItemId === item.id}
-                            onSelect={openItemSettings}
                           />
                         ))
                       )}
@@ -183,18 +162,8 @@ export function Layout() {
         }
         onClose={closePopover}
       >
-        {settingsTarget === 'container' && (
-          <ContainerSettingsPanel settings={containerSettings} onChange={updateContainer} />
-        )}
-        {settingsTarget === 'item' && selectedItem && (
-          <ItemSettingsPanel
-            item={selectedItem}
-            previewBreakpoint={previewBreakpoint}
-            onChangeLabel={(label) => updateItemLabel(selectedItem.id, label)}
-            onChangeSetting={(bp, key, value) => updateItem(selectedItem.id, bp, key, value)}
-            onRemove={handleRemoveItem}
-          />
-        )}
+        {settingsTarget === 'container' && <ContainerSettingsPanel />}
+        {settingsTarget === 'item' && selectedItem && <ItemSettingsPanel />}
         {settingsTarget === 'code' && (
           <CodeViewer
             maxHeightClassName="max-h-96"

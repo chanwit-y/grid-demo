@@ -1,39 +1,32 @@
-import { MAX_GRID_COLUMNS, type Breakpoint } from './breakpoints'
+import { MAX_GRID_COLUMNS } from './breakpoints'
+import { useGridStore, useSelectedItem } from './gridStore'
 import { containerResponsiveFields, itemResponsiveFields } from './gridProperties'
 import { ResponsivePropertyForm } from './ResponsivePropertyForm'
-import type { GridContainerSettings, GridItemData } from './types'
 
-export function ContainerSettingsPanel({
-  settings,
-  onChange,
-}: {
-  settings: GridContainerSettings
-  onChange: (bp: Breakpoint, key: string, value: string) => void
-}) {
+export function ContainerSettingsPanel() {
+  const settings = useGridStore((s) => s.containerSettings)
+  const updateContainer = useGridStore((s) => s.updateContainer)
+
   return (
     <ResponsivePropertyForm
       title="Container per breakpoint"
       fields={containerResponsiveFields}
       values={settings}
       maxColumns={MAX_GRID_COLUMNS}
-      onChange={onChange}
+      onChange={updateContainer}
     />
   )
 }
 
-export function ItemSettingsPanel({
-  item,
-  previewBreakpoint,
-  onChangeLabel,
-  onChangeSetting,
-  onRemove,
-}: {
-  item: GridItemData
-  previewBreakpoint: Breakpoint
-  onChangeLabel: (label: string) => void
-  onChangeSetting: (bp: Breakpoint, key: string, value: string) => void
-  onRemove: () => void
-}) {
+export function ItemSettingsPanel() {
+  const item = useSelectedItem()
+  const previewBreakpoint = useGridStore((s) => s.previewBreakpoint)
+  const updateItem = useGridStore((s) => s.updateItem)
+  const updateItemLabel = useGridStore((s) => s.updateItemLabel)
+  const removeSelectedItem = useGridStore((s) => s.removeSelectedItem)
+
+  if (!item) return null
+
   return (
     <div className="space-y-4">
       <label className="block space-y-1">
@@ -41,7 +34,7 @@ export function ItemSettingsPanel({
         <input
           type="text"
           value={item.label}
-          onChange={(e) => onChangeLabel(e.target.value)}
+          onChange={(e) => updateItemLabel(item.id, e.target.value)}
           className="w-full rounded-md border border-zinc-300 px-2.5 py-1.5 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
         />
       </label>
@@ -51,11 +44,11 @@ export function ItemSettingsPanel({
         defaultBreakpoint={previewBreakpoint}
         values={item.settings}
         maxColumns={MAX_GRID_COLUMNS}
-        onChange={onChangeSetting}
+        onChange={(bp, key, value) => updateItem(item.id, bp, key, value)}
       />
       <button
         type="button"
-        onClick={onRemove}
+        onClick={removeSelectedItem}
         className="w-full rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-100"
       >
         Remove item
