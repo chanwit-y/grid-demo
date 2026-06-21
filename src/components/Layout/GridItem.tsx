@@ -1,6 +1,7 @@
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { GripVertical, Settings } from 'lucide-react'
+import { memo } from 'react'
 import { cn, IconButton } from '../common'
 import { useGridStore } from './gridStore'
 import type { GridItemData } from './types'
@@ -78,6 +79,14 @@ export function GridItem({ item, isSelected }: GridItemProps) {
     </div>
   )
 }
+
+/**
+ * Memoized GridItem (fix #2). Props are referentially stable for unchanged
+ * items (store mutations preserve item references), so editing one item no
+ * longer re-renders the rest. Note: during a drag, `useSortable` still re-runs
+ * via dnd-kit context — that's inherent and unaffected by this memo.
+ */
+export const GridItemMemo = memo(GridItem)
 
 export function GridItemOverlay({ item }: { item: GridItemData }) {
   return (

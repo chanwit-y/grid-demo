@@ -44,7 +44,9 @@ export function ItemSettingsPanel() {
         defaultBreakpoint={previewBreakpoint}
         values={item.settings}
         maxColumns={MAX_GRID_COLUMNS}
-        onChange={(bp, key, value) => updateItem(item.id, bp, key, value)}
+        onChange={(bp, key, value, animate) =>
+          updateItem(item.id, bp, key, value, animate)
+        }
       />
       <button
         type="button"

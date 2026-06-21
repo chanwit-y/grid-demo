@@ -51,7 +51,25 @@ type ResponsivePropertyFormProps = {
   maxColumns?: number
   getMaxColumns?: (breakpoint: Breakpoint) => number
   defaultBreakpoint?: Breakpoint
-  onChange: (breakpoint: Breakpoint, key: string, value: string) => void
+  onChange: (
+    breakpoint: Breakpoint,
+    key: string,
+    value: string,
+    animate?: boolean,
+  ) => void
+}
+
+/**
+ * Discrete controls (selects, span buttons) commit once per interaction, so
+ * they animate. Free-text inputs fire per keystroke, so they update without a
+ * FLIP (fix #3) and let CSS transitions smooth the change.
+ */
+function fieldAnimates(field: PropertyField): boolean {
+  return (
+    field.type === 'select' ||
+    field.type === 'number-select' ||
+    field.type === 'span-buttons'
+  )
 }
 
 export function ResponsivePropertyForm({
@@ -129,12 +147,16 @@ export function ResponsivePropertyForm({
                 <ColumnSpanButtons
                   value={value}
                   max={Math.min(columnLimit, field.max ?? MAX_GRID_COLUMNS)}
-                  onSelect={(span) => onChange(activeBp, field.key, span)}
+                  onSelect={(span) =>
+                    onChange(activeBp, field.key, span, fieldAnimates(field))
+                  }
                 />
               ) : field.type === 'select' || field.type === 'number-select' ? (
                 <select
                   value={value}
-                  onChange={(e) => onChange(activeBp, field.key, e.target.value)}
+                  onChange={(e) =>
+                    onChange(activeBp, field.key, e.target.value, fieldAnimates(field))
+                  }
                   className="w-full rounded-md border border-zinc-300 bg-white px-2.5 py-1.5 text-sm text-zinc-900 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
                 >
                   {(getOptionsForField(field) ?? []).map((opt) => (
@@ -148,7 +170,9 @@ export function ResponsivePropertyForm({
                   type="text"
                   value={value}
                   placeholder={field.placeholder}
-                  onChange={(e) => onChange(activeBp, field.key, e.target.value)}
+                  onChange={(e) =>
+                    onChange(activeBp, field.key, e.target.value, fieldAnimates(field))
+                  }
                   className="w-full rounded-md border border-zinc-300 bg-white px-2.5 py-1.5 font-mono text-sm text-zinc-900 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
                 />
               )}
