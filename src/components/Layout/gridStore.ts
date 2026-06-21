@@ -214,7 +214,10 @@ export const useGridStore = create<GridState>((set, get) => {
     openCodePanel: (rect) =>
       set({ selectedItemId: null, settingsTarget: 'code', popoverAnchor: rect }),
 
-    closePopover: () => set({ popoverAnchor: null, settingsTarget: null }),
+    // Dismissing the popover (canvas click, click-outside, or Esc) also clears
+    // the item selection so the active cell's highlight goes away.
+    closePopover: () =>
+      set({ popoverAnchor: null, settingsTarget: null, selectedItemId: null }),
 
     setPreviewBreakpoint: (bp) => animated(() => set({ previewBreakpoint: bp }), 'all'),
   }
