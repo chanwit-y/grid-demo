@@ -2,6 +2,7 @@ import { arrayMove } from '@dnd-kit/sortable'
 import { create } from 'zustand'
 import type { Breakpoint } from './breakpoints'
 import { updateContainerBreakpoint, updateItemBreakpoint } from './gridSettings'
+import { readSeedCount } from './perf'
 import {
   createDefaultItemSettings,
   defaultContainerSettings,
@@ -44,8 +45,14 @@ type GridState = {
   addItem: () => void
   removeItem: (id: string) => void
   removeSelectedItem: () => void
-  updateContainer: (bp: Breakpoint, key: string, value: string) => void
-  updateItem: (id: string, bp: Breakpoint, key: string, value: string) => void
+  updateContainer: (bp: Breakpoint, key: string, value: string, animate?: boolean) => void
+  updateItem: (
+    id: string,
+    bp: Breakpoint,
+    key: string,
+    value: string,
+    animate?: boolean,
+  ) => void
   updateItemLabel: (id: string, label: string) => void
   moveItem: (activeId: string, overId: string) => void
 
@@ -65,6 +72,18 @@ function createId(): string {
 }
 
 function createInitialItems(): GridItemData[] {
+  // Dev-only `?seed=N` benchmark seeding (no-op in prod, see perf.ts).
+  const seed = readSeedCount()
+  if (seed > 0) {
+    return Array.from({ length: seed }, (_, i) => ({
+      id: createId(),
+      label: `Item ${i + 1}`,
+      settings: createDefaultItemSettings({
+        colSpan: { xs: 4, sm: 3, md: 2, lg: 2 },
+      }),
+    }))
+  }
+
   return [
     { id: createId(), label: 'Item 1', settings: createDefaultItemSettings() },
     {
@@ -136,8 +155,11 @@ export const useGridStore = create<GridState>((set, get) => {
       closePopover()
     },
 
-    updateContainer: (bp, key, value) =>
-      animated(() => {
+    // Text-field edits pass `animate: false` so live typing updates the grid
+    // (CSS transitions smooth gap/columns) without firing a JS FLIP per
+    // keystroke. Discrete controls (selects, span buttons) pass `animate: true`.
+    updateContainer: (bp, key, value, animate = true) => {
+      const run = () =>
         set({
           containerSettings: updateContainerBreakpoint(
             get().containerSettings,
@@ -146,10 +168,12 @@ export const useGridStore = create<GridState>((set, get) => {
             value,
           ),
         })
-      }, 'all'),
+      if (animate) animated(run, 'all')
+      else run()
+    },
 
-    updateItem: (id, bp, key, value) =>
-      animated(() => {
+    updateItem: (id, bp, key, value, animate = true) => {
+      const run = () =>
         set({
           items: get().items.map((item) =>
             item.id === id
@@ -157,7 +181,9 @@ export const useGridStore = create<GridState>((set, get) => {
               : item,
           ),
         })
-      }, id),
+      if (animate) animated(run, id)
+      else run()
+    },
 
     updateItemLabel: (id, label) =>
       set({
@@ -188,11 +214,21 @@ export const useGridStore = create<GridState>((set, get) => {
     openCodePanel: (rect) =>
       set({ selectedItemId: null, settingsTarget: 'code', popoverAnchor: rect }),
 
-    closePopover: () => set({ popoverAnchor: null, settingsTarget: null }),
+    // Dismissing the popover (canvas click, click-outside, or Esc) also clears
+    // the item selection so the active cell's highlight goes away.
+    closePopover: () =>
+      set({ popoverAnchor: null, settingsTarget: null, selectedItemId: null }),
 
     setPreviewBreakpoint: (bp) => animated(() => set({ previewBreakpoint: bp }), 'all'),
   }
 })
+
+// Dev-only: expose the store for scripted benchmarking (see perf.ts). Stripped
+// from production builds.
+if (import.meta.env.DEV && typeof window !== 'undefined') {
+  ;(window as unknown as { __gridStore?: typeof useGridStore }).__gridStore =
+    useGridStore
+}
 
 /** Selector helper for the currently selected item (or null). */
 export function useSelectedItem(): GridItemData | null {

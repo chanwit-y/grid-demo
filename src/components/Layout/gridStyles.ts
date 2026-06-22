@@ -1,6 +1,7 @@
 import { BREAKPOINTS, clampColumns, clampSpan } from './breakpoints'
 import type { Breakpoint } from './breakpoints'
 import { GRID_ITEM_TRANSITION, GRID_LAYOUT_TRANSITION } from './gridAnimation'
+import { measure } from './perf'
 import type { GridContainerSettings, GridItemData } from './types'
 import { escapeClassName } from './utils'
 
@@ -120,6 +121,18 @@ function reducedMotionBlock(containerClass: string): string {
 }
 
 export function generateGridStyles(
+  layoutId: string,
+  container: GridContainerSettings,
+  items: GridItemData[],
+  previewBreakpoint?: Breakpoint,
+): string {
+  return measure(
+    `generateGridStyles(${items.length} items${previewBreakpoint ? ', preview' : ', full'})`,
+    () => generateGridStylesImpl(layoutId, container, items, previewBreakpoint),
+  )
+}
+
+function generateGridStylesImpl(
   layoutId: string,
   container: GridContainerSettings,
   items: GridItemData[],

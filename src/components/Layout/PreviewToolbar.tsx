@@ -1,6 +1,6 @@
 import { Code, Plus, Settings } from 'lucide-react'
-import { cn, IconButton } from '../common'
-import { BREAKPOINTS } from './breakpoints'
+import { IconButton } from '../common'
+import { BreakpointSelector } from './BreakpointSelector'
 import { useGridStore } from './gridStore'
 
 export function PreviewToolbar() {
@@ -15,21 +15,10 @@ export function PreviewToolbar() {
     <div className="relative flex shrink-0 items-center justify-end gap-2 border-b border-zinc-200 bg-white/70 px-3 py-2">
       <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-lg border border-zinc-200 bg-zinc-50 p-1">
         <span className="px-1.5 text-xs font-medium text-zinc-500">Preview</span>
-        {BREAKPOINTS.map((bp) => (
-          <button
-            key={bp.key}
-            type="button"
-            onClick={() => setPreviewBreakpoint(bp.key)}
-            className={cn(
-              'rounded px-2 py-1 text-xs font-medium transition-colors',
-              previewBreakpoint === bp.key
-                ? 'bg-violet-600 text-white'
-                : 'text-zinc-600 hover:bg-white',
-            )}
-          >
-            {bp.label}
-          </button>
-        ))}
+        <BreakpointSelector
+          value={previewBreakpoint}
+          onChange={setPreviewBreakpoint}
+        />
       </div>
 
       <div className="flex items-center gap-0.5 rounded-lg border border-zinc-200 bg-zinc-50 p-1">

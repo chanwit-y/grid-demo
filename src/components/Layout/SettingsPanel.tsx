@@ -1,3 +1,4 @@
+import { Input } from '../common'
 import { MAX_GRID_COLUMNS } from './breakpoints'
 import { useGridStore, useSelectedItem } from './gridStore'
 import { containerResponsiveFields, itemResponsiveFields } from './gridProperties'
@@ -31,11 +32,9 @@ export function ItemSettingsPanel() {
     <div className="space-y-4">
       <label className="block space-y-1">
         <span className="text-xs font-medium text-zinc-600">Label</span>
-        <input
-          type="text"
+        <Input
           value={item.label}
           onChange={(e) => updateItemLabel(item.id, e.target.value)}
-          className="w-full rounded-md border border-zinc-300 px-2.5 py-1.5 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
         />
       </label>
       <ResponsivePropertyForm
@@ -44,7 +43,9 @@ export function ItemSettingsPanel() {
         defaultBreakpoint={previewBreakpoint}
         values={item.settings}
         maxColumns={MAX_GRID_COLUMNS}
-        onChange={(bp, key, value) => updateItem(item.id, bp, key, value)}
+        onChange={(bp, key, value, animate) =>
+          updateItem(item.id, bp, key, value, animate)
+        }
       />
       <button
         type="button"

@@ -1,3 +1,5 @@
+import { measure } from './perf'
+
 export const SMOOTH_DURATION_MS = 560
 export const SMOOTH_EASING = 'cubic-bezier(0.4, 0, 0.2, 1)'
 
@@ -168,7 +170,9 @@ export function playGridFlipAnimation(
   requestAnimationFrame(() =>
     requestAnimationFrame(() => {
       beforeMeasure?.()
-      flipGridItems(container, snapshot, contentFadeId)
+      measure(`flipGridItems(${snapshot.items.size} items)`, () =>
+        flipGridItems(container, snapshot, contentFadeId),
+      )
     }),
   )
 }
